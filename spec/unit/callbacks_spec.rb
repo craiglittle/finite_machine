@@ -902,4 +902,33 @@ RSpec.describe FiniteMachine, 'callbacks' do
     fsm.stop
     expect(called).to eq(['on_enter_red'])
   end
+
+  it "executes event-based callbacks even when state does not change" do
+    called = []
+
+    fsm = FiniteMachine.define do
+      initial :active
+
+      events {
+        event :advance, active: :inactive, if: -> { false }
+      }
+
+      callbacks {
+        on_before do |event|
+          called << '`on_before` called'
+        end
+
+        on_after do |event|
+          called << '`on_after` called'
+        end
+      }
+    end
+
+    fsm.advance
+
+    expect(called).to eq([
+      '`on_before` called',
+      '`on_after` called'
+    ])
+  end
 end
