@@ -155,7 +155,10 @@ module FiniteMachine
         result = callable.call(trans_event, *data)
       end
 
-      event.transition.cancelled = (result == CANCELLED)
+      if result == CANCELLED
+        hooks.collection.clear
+        event.transition.cancelled = true
+      end
     end
 
     # Callback names including all states and events
