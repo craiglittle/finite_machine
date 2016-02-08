@@ -78,7 +78,6 @@ module FiniteMachine
     def initialize(*args, &block)
       attributes     = args.last.is_a?(Hash) ? args.pop : {}
 
-      @event_queue   = EventQueue.new
       @initial_state = DEFAULT_STATE
       @async_proxy   = AsyncProxy.new(self)
       @subscribers   = Subscribers.new
@@ -324,9 +323,13 @@ module FiniteMachine
     #
     # @api public
     def trigger(event_name, *data, &block)
+      @event_queue = EventQueue.new
       trigger!(event_name, *data, &block)
     rescue InvalidStateError, TransitionError
       false
+    ensure
+      @event_queue && @event_queue.shutdown
+      @event_queue = nil
     end
 
     # Find available state to transition to and transition
